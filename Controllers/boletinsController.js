@@ -1,25 +1,84 @@
 const getAllBoletins = async ( req, res ) => {
     const { pool } = req;
-    
+    const { data_coleta, qualidade_agua, observacao, nome_ponto_coleta, nome_campanha, nome_estado, nome_cidade } = req.body;
+
+    let filtros = [];
+    let values = [];
+    let index = 1;
+
+    if (data_coleta) {
+        filtros.push(`data_coleta = $${index}`);
+        values.push(data_coleta);
+        index++;
+    }
+
+    if (qualidade_agua) {
+        filtros.push(`qualidade_agua ilike $${index}`);
+        values.push(`%${qualidade_agua}%`);
+        index++;
+    }
+
+    if (observacao) {
+        filtros.push(`observacao ilike $${index}`);
+        values.push(`%${observacao}%`);
+        index++;
+    }
+
+    if (nome_ponto_coleta) {
+        filtros.push(`nome_ponto_coleta ilike $${index}`);
+        values.push(nome_ponto_coleta);
+        index++;
+    }
+
+    if (nome_cidade) {
+        filtros.push(`c.nome ilike $${index}`);
+        values.push(`%${nome_cidade}%`);
+        index++;
+    }
+
+    if (nome_campanha) {
+        filtros.push(`nome_campanha ilike $${index}`);
+        values.push(`%${nome_campanha}%`);
+        index++;
+    }
+    if (nome_estado) {
+        filtros.push(`nome_estado ilike $${index}`);
+        values.push(`%${nome_estado}%`);
+        index++;
+    }
+
+    const existeFiltros = filtros.length > 0;
+
+    const query = `SELECT b.id,
+                                 data_coleta, 
+                                 qualidade_agua, 
+                                 observacao, 
+                                 b.id_ponto_coleta, 
+                                 pc.nome as nome_ponto_coleta, 
+                                 b.id_usuario_criador, 
+                                 u.nome as nome_criador, 
+                                 b.id_campanha, 
+                                 cb.nome as nome_campanha, 
+                                 e.id as id_estado, 
+                                 e.nome as nome_estado, 
+                                 c.id as id_cidade, 
+                                 c.nome as nome_cidade 
+                            FROM public.boletins as b
+                            join pontos_coleta as pc 
+                              on b.id_ponto_coleta = pc.id 
+                            join usuarios as u 
+                              on u.id = b.id_usuario_criador
+                            join campanhas_balneamento as cb 
+                              on b.id_campanha = cb.id 
+                            join estados as e
+                              on cb.id_estado = e.id
+                            join cidades as c
+                              on e.id = c.id_estado 
+       ${existeFiltros ? ' WHERE ' + filtros.join(' AND ') : ''}
+                           order by data_coleta desc , b.id desc`;
+
     try {
-        const result = await pool.query('SELECT b.id, ' +
-            'data_coleta, ' +
-            'qualidade_agua, ' +
-            'observacao, ' +
-            'b.id_ponto_coleta, ' +
-            'pc.nome as nome_ponto_coleta, ' +
-            'b.id_usuario_criador, ' +
-            'u.nome as nome_criador, ' +
-            'b.id_campanha, ' +
-            'cb.nome as nome_campanha ' +
-            'FROM public.boletins as b ' +
-            'join pontos_coleta as pc ' +
-            'on b.id_ponto_coleta = pc.id ' +
-            'join usuarios as u ' +
-            'on u.id = b.id_usuario_criador ' +
-            'join campanhas_balneamento as cb ' +
-            'on b.id_campanha = cb.id ' +
-            'order by b.id');
+        const result = await pool.query(query,values);
         res.status(200).json(result.rows);
     } catch (error) {
         console.error(error);

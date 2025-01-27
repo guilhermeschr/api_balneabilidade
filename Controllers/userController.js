@@ -1,12 +1,43 @@
 const bcrypt = require('bcrypt');
-const secreto = process.env.JWT_SECRET;
 
 
 const getAllUsers = async (req, res) => {
     const { pool } = req; // Pega o pool de conexões do banco de dados
+    const { id, nome, email } = req.query;
+
+    let filtros = [];
+    let values = [];
+    let index = 1;
+
+    if (id) {
+        filtros.push(`id = $${index}`);
+        values.push(id);
+        index++;
+    }
+
+    if (nome) {
+        filtros.push(`nome ilike $${index}`);
+        values.push(`%${nome}%`);
+        index++;
+    }
+
+    if (email) {
+        filtros.push(`email ilike $${index}`);
+        values.push(`%${email}%`);
+        index++;
+    }
+
+    const existeFiltros = filtros.length > 0;
+
+    const query =     `SELECT * 
+                         FROM usuarios 
+    ${existeFiltros ? ' WHERE ' + filtros.join(' AND ') : ''} 
+                        order by id`;
+
 
     try {
-        const result = await pool.query('SELECT * FROM usuarios');
+        const result = await pool.query(query,values);
+
         res.status(200).json(result.rows); // Envia a lista de usuários
     } catch (error) {
         console.error(error);

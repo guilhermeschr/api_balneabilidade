@@ -1,8 +1,6 @@
 const getAllBoletins = async ( req, res ) => {
     const { pool } = req;
-    const { data_coleta, qualidade_agua, observacao, nome_ponto_coleta, nome_campanha, nome_estado, nome_cidade } = req.params;
-
-    console.log(nome_cidade)
+    const { data_coleta, qualidade_agua, observacao, nome_ponto_coleta, nome_campanha, nome_estado, nome_cidade } = req.query;
 
     let filtros = [];
     let values = [];
@@ -27,8 +25,8 @@ const getAllBoletins = async ( req, res ) => {
     }
 
     if (nome_ponto_coleta) {
-        filtros.push(`nome_ponto_coleta ilike $${index}`);
-        values.push(nome_ponto_coleta);
+        filtros.push(`pc.nome ilike $${index}`);
+        values.push(`%${nome_ponto_coleta}%`);
         index++;
     }
 
@@ -39,12 +37,12 @@ const getAllBoletins = async ( req, res ) => {
     }
 
     if (nome_campanha) {
-        filtros.push(`nome_campanha ilike $${index}`);
+        filtros.push(`cb.nome ilike $${index}`);
         values.push(`%${nome_campanha}%`);
         index++;
     }
     if (nome_estado) {
-        filtros.push(`nome_estado ilike $${index}`);
+        filtros.push(`e.nome ilike $${index}`);
         values.push(`%${nome_estado}%`);
         index++;
     }
@@ -79,7 +77,6 @@ const getAllBoletins = async ( req, res ) => {
        ${existeFiltros ? ' WHERE ' + filtros.join(' AND ') : ''}
                            order by data_coleta desc , b.id desc`;
 
-    console.log(query);
 
     try {
         const result = await pool.query(query,values);

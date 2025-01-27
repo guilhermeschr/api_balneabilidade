@@ -1,6 +1,8 @@
 const getAllBoletins = async ( req, res ) => {
     const { pool } = req;
-    const { data_coleta, qualidade_agua, observacao, nome_ponto_coleta, nome_campanha, nome_estado, nome_cidade } = req.body;
+    const { data_coleta, qualidade_agua, observacao, nome_ponto_coleta, nome_campanha, nome_estado, nome_cidade } = req.params;
+
+    console.log(nome_cidade)
 
     let filtros = [];
     let values = [];
@@ -76,6 +78,8 @@ const getAllBoletins = async ( req, res ) => {
                               on e.id = c.id_estado 
        ${existeFiltros ? ' WHERE ' + filtros.join(' AND ') : ''}
                            order by data_coleta desc , b.id desc`;
+
+    console.log(query);
 
     try {
         const result = await pool.query(query,values);

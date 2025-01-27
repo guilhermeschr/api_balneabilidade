@@ -75,8 +75,8 @@ const getAllBoletins = async ( req, res ) => {
                             join cidades as c
                               on e.id = c.id_estado 
        ${existeFiltros ? ' WHERE ' + filtros.join(' AND ') : ''}
-                           order by data_coleta desc , b.id desc`;
-
+                           order by data_coleta desc , b.id desc
+    `;
 
     try {
         const result = await pool.query(query,values);
@@ -86,6 +86,7 @@ const getAllBoletins = async ( req, res ) => {
         res.status(500).json({erro: 'Erro ao buscar os boletins'});
     }
 }
+
 const postBoletim = async ( req, res ) =>{
     const { pool } = req;
     const { data_coleta, qualidade_agua, observacao, id_ponto_coleta, id_usuario, id_campanha } = req.body;

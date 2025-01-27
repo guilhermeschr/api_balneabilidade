@@ -1,8 +1,32 @@
 const getAllEstados = async ( req, res ) => {
     const { pool } = req;
+    const { id, nome } = req.query;
+
+    let filtros = [];
+    let values = [];
+    let index = 1;
+
+    if (id) {
+        filtros.push(`id = $${index}`);
+        values.push(id);
+        index++;
+    }
+
+    if (nome) {
+        filtros.push(`nome ilike $${index}`);
+        values.push(`%${nome}%`);
+        index++;
+    }
+
+    const existeFiltros = filtros.length > 0;
+
+    const query =     `SELECT * 
+                         FROM estados 
+    ${existeFiltros ? ' WHERE ' + filtros.join(' AND ') : ''} 
+                        order by id`;
 
     try{
-        const result  = await pool.query('SELECT * FROM estados');
+        const result  = await pool.query(query,values);
         res.status(200).json(result.rows); // Envia a lista de estados
     }
     catch (error){

@@ -1,4 +1,4 @@
-const {rows} = require("pg/lib/defaults");
+
 const getAllPontosColetas = async ( req, res ) => {
     const { pool } = req;
 

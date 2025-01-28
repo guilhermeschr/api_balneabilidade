@@ -1,10 +1,44 @@
 const getAllCidades = async (req,res) => {
     const { pool } = req;
 
+    const { id, nome_cidade, nome_estado } = req.query;
+
+    let filtros = [];
+    let values = [];
+    let index = 1;
+
+    if (id) {
+        filtros.push(`cidades.id = $${index}`);
+        values.push(id);
+        index++;
+    }
+
+    if (nome_cidade) {
+        filtros.push(`cidades.nome ilike $${index}`);
+        values.push(`%${nome_cidade}%`);
+        index++;
+    }
+
+    if (nome_estado) {
+        filtros.push(`estados.nome ilike $${index}`);
+        values.push(`%${nome_estado}%`);
+        index++;
+    }
+
+    const existeFiltros = filtros.length > 0;
+
+    const query = `SELECT cidades.id, 
+                          cidades.nome as nome_cidade, 
+                          id_estado, 
+                          estados.nome as nome_estado 
+                     FROM public.cidades 
+                     join estados 
+                       on cidades.id_estado = estados.id 
+${existeFiltros ? ' WHERE ' + filtros.join(' AND ') : ''} 
+                    order by id`
+
     try {
-        const result = await pool.query(
-            'SELECT cidades.id, cidades.nome as nome_cidade, id_estado, estados.nome as nome_estado FROM public.cidades join estados on cidades.id_estado = estados.id'
-        )
+        const result = await pool.query(query,values);
 
         res.status(200).json(result.rows);
     } catch (error) {

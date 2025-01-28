@@ -1,21 +1,58 @@
 const getAllCampanhas = async ( req, res ) => {
     const { pool } = req;
+    const { id, nome_campanha, data_inicio, data_fim, nome_estado } = req.query;
+
+    let filtros = [];
+    let values = [];
+    let index = 1;
+
+    if (id) {
+        filtros.push(`cb.id = $${index}`);
+        values.push(id);
+        index++;
+    }
+
+    if (nome_campanha) {
+        filtros.push(`cb.nome ilike $${index}`);
+        values.push(`%${nome_campanha}%`);
+        index++;
+    }
+    if (data_inicio) {
+        filtros.push(`data_inicio ilike $${index}`);
+        values.push(`%${data_inicio}%`);
+        index++;
+    }
+    if (data_fim) {
+        filtros.push(`data_fim ilike $${index}`);
+        values.push(`%${data_fim}%`);
+        index++;
+    }
+    if (nome_estado) {
+        filtros.push(`e.nome ilike $${index}`);
+        values.push(`%${nome_estado}%`);
+        index++;
+    }
+
+    const existeFiltros = filtros.length > 0;
+
+    const query = `SELECT cb.id,
+                          cb.nome AS campanha_nome,
+                          cb.id_usuario_criador,
+                          u.nome AS usuario_nome,
+                          cb.data_inicio,
+                          cb.data_fim,
+                          cb.id_estado,
+                          e.nome AS estado_nome
+                     FROM public.campanhas_balneamento AS cb
+                     JOIN usuarios AS u
+                       ON cb.id_usuario_criador = u.id
+                     JOIN estados AS e
+                       ON cb.id_estado = e.id
+${existeFiltros ? ' WHERE ' + filtros.join(' AND ') : ''}
+                    ORDER BY cb.id`
 
     try{
-        const result = await pool.query('SELECT cb.id, ' +
-            'cb.nome AS campanha_nome, ' +
-            'cb.id_usuario_criador, ' +
-            'u.nome AS usuario_nome, ' +
-            'cb.data_inicio, ' +
-            'cb.data_fim, ' +
-            'cb.id_estado, ' +
-            'e.nome AS estado_nome ' +
-            'FROM public.campanhas_balneamento AS cb ' +
-            'JOIN usuarios AS u ' +
-            'ON cb.id_usuario_criador = u.id ' +
-            'JOIN estados AS e ' +
-            'ON cb.id_estado = e.id ' +
-            'ORDER BY cb.id DESC');
+        const result = await pool.query(query,values);
         res.status(200).json(result.rows);
     } catch (error) {
         console.error(error);

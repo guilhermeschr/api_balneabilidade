@@ -1,9 +1,71 @@
+const { query } = require("express");
 
 const getAllPontosColetas = async ( req, res ) => {
     const { pool } = req;
+    const { id, nome, tipo, descricao, nome_cidade, nome_estado } = req.query;
+
+    let filtros = [];
+    let values = [];
+    let index = 1;
+
+    if (id) {
+        filtros.push(`pc.id = $${index}`);
+        values.push(id);
+        index++;
+    }
+
+    if (nome) {
+        filtros.push(`pc.nome ilike $${index}`);
+        values.push(`%${nome}%`);
+        index++;
+    }
+
+    if (tipo) {
+        filtros.push(`pc.tipo ilike $${index}`);
+        values.push(`%${tipo}%`);
+        index++;
+    }
+
+    if (descricao) {
+        filtros.push(`descricao ilike $${index}`);
+        values.push(`%${descricao}%`);
+        index++;
+    }
+
+    if (nome_cidade) {
+        filtros.push(`c.nome ilike $${index}`);
+        values.push(`%${nome_cidade}%`);
+        index++;
+    }
+
+    if (nome_estado) {
+        filtros.push(`e.nome ilike $${index}`);
+        values.push(`%${nome_estado}%`);
+        index++;
+    }
+
+    const existeFiltros = filtros.length > 0;
+
+    const query = `SELECT pc.id, 
+                          pc.nome, 
+                          latitude, 
+                          longitude, 
+                          tipo, 
+                          descricao,
+                          id_cidade as id_cidade, 
+                          c.nome as nome_cidade,
+                          e.id as id_estado,
+                          e.nome as nome_estado
+                     FROM public.pontos_coleta as pc
+                    inner join cidades as c 
+                       on c.id = pc.id_cidade
+                    inner join estados as e
+                       on e.id = c.id_estado
+${existeFiltros ? ' WHERE ' + filtros.join(' AND ') : ''} 
+                    order by id` 
 
     try {
-        const result = await pool.query('SELECT * FROM pontos_coleta');
+        const result = await pool.query(query,values);
         res.status(200).json(result.rows);
     } catch (error) {
         console.error(error);

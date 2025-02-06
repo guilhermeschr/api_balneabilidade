@@ -66,7 +66,7 @@ const deleteEstado = async ( req, res ) => {
             return res.status(404).json({ message: 'Estado não encontrado' });
         }
 
-        res.status(204).json({message: 'Estado excluído com sucesso!'})
+        res.status(200).json({message: 'Estado excluído com sucesso!'})
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Erro ao deletar estado' });

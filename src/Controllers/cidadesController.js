@@ -68,17 +68,20 @@ const deleteCidade = async ( req, res ) => {
     const { pool } = req;
     const { id } = req.params;
 
-    const result = await pool.query(
-        'delete from cidades where id=$1',
-        [id]
-    )
-
-    // Se a exclusão for bem-sucedida, o `result.rowCount` será maior que 0
-    if (result.rowCount === 0) {
-        return res.status(404).json({ message: 'Cidade não encontrado' });
+    try {
+        const result = await pool.query(
+            'delete from cidades where id=$1',
+            [id]
+        )
+        if (result.rowCount === 0) {
+            return res.status(404).json({ message: 'Cidade não encontrado' });
+        }
+        res.status(200).json({message: 'Cidade excluída com sucesso!'})
+    } catch ( error ) {
+        console.error(error);
+        res.status(500).json({ message: 'Erro ao deletar cidade' });
     }
 
-    res.status(204).json({message: 'Cidade excluída com sucesso!'})
 }
 
 const putCidade = async ( req, res ) => {

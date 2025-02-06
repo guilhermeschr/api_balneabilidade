@@ -1,11 +1,16 @@
 const getAllBoletins = async ( req, res ) => {
     const { pool } = req;
-    const { data_coleta, qualidade_agua, observacao, nome_ponto_coleta, nome_campanha, nome_estado, nome_cidade } = req.query;
+    const { data_coleta, qualidade_agua, observacao, nome_ponto_coleta, nome_campanha, nome_estado, nome_cidade, id } = req.query;
 
     let filtros = [];
     let values = [];
     let index = 1;
 
+    if (id) {
+        filtros.push(`b.id = $${index}`);
+        values.push(id);
+        index++;
+    }
     if (data_coleta) {
         filtros.push(`data_coleta = $${index}`);
         values.push(data_coleta);
@@ -41,6 +46,7 @@ const getAllBoletins = async ( req, res ) => {
         values.push(`%${nome_campanha}%`);
         index++;
     }
+
     if (nome_estado) {
         filtros.push(`e.nome ilike $${index}`);
         values.push(`%${nome_estado}%`);
@@ -62,22 +68,22 @@ const getAllBoletins = async ( req, res ) => {
                                  e.id as id_estado, 
                                  e.nome as nome_estado, 
                                  c.id as id_cidade, 
-                                 c.nome as nome_cidade 
+                                 c.nome as nome_cidade
                             FROM public.boletins as b
                             join pontos_coleta as pc 
-                              on b.id_ponto_coleta = pc.id 
-                            join usuarios as u 
+                              on b.id_ponto_coleta = pc.id
+                       LEFT join usuarios as u 
                               on u.id = b.id_usuario_criador
-                            join campanhas_balneamento as cb 
-                              on b.id_campanha = cb.id 
-                            join estados as e
+                       LEFT join campanhas_balneamento as cb 
+                              on b.id_campanha = cb.id
+                       LEFT join estados as e
                               on cb.id_estado = e.id
-                            join cidades as c
+                       LEFT join cidades as c
                               on e.id = c.id_estado 
        ${existeFiltros ? ' WHERE ' + filtros.join(' AND ') : ''}
                            order by data_coleta desc , b.id desc
     `;
-
+    console.log(query)
     try {
         const result = await pool.query(query,values);
         res.status(200).json(result.rows);

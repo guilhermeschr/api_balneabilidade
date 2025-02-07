@@ -57,9 +57,9 @@ const getAllPontosColetas = async ( req, res ) => {
                           e.id as id_estado,
                           e.nome as nome_estado
                      FROM public.pontos_coleta as pc
-                    inner join cidades as c 
+                left join cidades as c 
                        on c.id = pc.id_cidade
-                    inner join estados as e
+                left join estados as e
                        on e.id = c.id_estado
 ${existeFiltros ? ' WHERE ' + filtros.join(' AND ') : ''} 
                     order by id` 

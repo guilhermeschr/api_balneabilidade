@@ -4,7 +4,7 @@ const { getAllPontosColetas, postPontosColeta, deletePontosColeta, putPontosCole
 const {autentificacao} = require("../Controllers/loginController");
 
 // Rota para obter todos os usuários
-router.get('/', getAllPontosColetas);
+router.get('/',autentificacao, getAllPontosColetas);
 router.post('/',autentificacao, postPontosColeta);
 router.delete('/:id',autentificacao, deletePontosColeta);
 router.put('/:id',autentificacao, putPontosColeta);

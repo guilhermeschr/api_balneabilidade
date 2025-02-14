@@ -61,6 +61,9 @@ const getAllBoletins = async ( req, res ) => {
                                  observacao, 
                                  b.id_ponto_coleta, 
                                  pc.nome as nome_ponto_coleta, 
+                                 pc.descricao as descricao_ponto_coleta,
+                                 pc.latitude as latitude,
+                                 pc.longitude as longitude,
                                  b.id_usuario_criador, 
                                  u.nome as nome_criador, 
                                  b.id_campanha, 
@@ -69,17 +72,17 @@ const getAllBoletins = async ( req, res ) => {
                                  e.nome as nome_estado, 
                                  c.id as id_cidade, 
                                  c.nome as nome_cidade
-                            FROM public.boletins as b
-                            join pontos_coleta as pc 
-                              on b.id_ponto_coleta = pc.id
-                       LEFT join usuarios as u 
-                              on u.id = b.id_usuario_criador
-                       LEFT join campanhas_balneamento as cb 
-                              on b.id_campanha = cb.id
-                       LEFT join estados as e
-                              on cb.id_estado = e.id
-                       LEFT join cidades as c
-                              on e.id = c.id_estado 
+                            FROM public.boletins AS b
+                            JOIN pontos_coleta AS pc
+                              ON b.id_ponto_coleta = pc.id
+                       LEFT JOIN cidades AS c
+                              ON pc.id_cidade = c.id
+                       LEFT JOIN estados AS e
+                              ON c.id_estado = e.id
+                       LEFT JOIN usuarios AS u
+                              ON u.id = b.id_usuario_criador
+                       LEFT JOIN campanhas_balneamento AS cb
+                              ON b.id_campanha = cb.id
        ${existeFiltros ? ' WHERE ' + filtros.join(' AND ') : ''}
                            order by data_coleta desc , b.id desc
     `;

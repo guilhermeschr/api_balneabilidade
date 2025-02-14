@@ -61,6 +61,43 @@ ${existeFiltros ? ' WHERE ' + filtros.join(' AND ') : ''}
 
 }
 
+const getCampanhasValidas = async ( req, res ) => {
+    const { pool } = req;
+
+    const dataAtual = new Date().toISOString().split('T')[0]; // Formato: "YYYY-MM-DD"
+    // const sql = `SELECT * FROM tabela `;
+    const valores = [dataAtual];
+
+
+    const query = `SELECT cb.id,
+                          cb.nome AS campanha_nome,
+                          cb.id_usuario_criador,
+                          u.nome AS usuario_nome,
+                          cb.data_inicio,
+                          cb.data_fim,
+                          cb.id_estado,
+                          e.nome AS estado_nome
+                     FROM public.campanhas_balneamento AS cb
+                     JOIN usuarios AS u
+                       ON cb.id_usuario_criador = u.id
+                     JOIN estados AS e
+                       ON cb.id_estado = e.id
+                    WHERE cb.data_fim > $1 
+                      AND cb.data_inicio < $1
+                   ORDER BY cb.id`;
+    console.log(query)
+    console.log(dataAtual)
+
+    try{
+        const result = await pool.query(query,valores);
+        res.status(200).json(result.rows);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({message:'Erro ao buscar campanhas de balneamento'})
+    }
+
+}
+
 const postCampanha = async ( req, res ) => {
     const { pool } = req;
     const { id_usuario, nome, data_inicio, data_fim, id_estado } = req.body;
@@ -158,4 +195,4 @@ const putCampanha = async ( req, res ) => {
     }
 }
 
-module.exports = { getAllCampanhas, postCampanha, deleteCampanha, putCampanha };
+module.exports = { getAllCampanhas, postCampanha, deleteCampanha, putCampanha, getCampanhasValidas };

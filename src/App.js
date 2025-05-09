@@ -13,8 +13,6 @@ const campanhasbalneamentoRoutes = require('./routes/campanhasbalneamentoRoutes'
 const boletinsRoutes = require('./routes/boletinsRoutes');
 const loginRoutes = require('./routes/loginRoutes');
 
-
-
 // Cria uma instância do servidor Express
 const app = express();
 
@@ -23,12 +21,19 @@ app.use(cors());
 app.use(bodyParser.json());
 
 // Configurações do banco de dados PostgreSQL usando Pool
+// const pool = new Pool({
+//     user: process.env.DB_USER,        // Usuário do banco
+//     host: process.env.DB_HOST,        // Host do banco de dados
+//     database: process.env.DB_DATABASE,// Nome do banco de dados
+//     password: process.env.DB_PASSWORD,// Senha do banco
+//     port: process.env.DB_PORT,        // Porta padrão do PostgreSQL
+// });
+
 const pool = new Pool({
-    user: process.env.DB_USER,        // Usuário do banco
-    host: process.env.DB_HOST,        // Host do banco de dados
-    database: process.env.DB_DATABASE,// Nome do banco de dados
-    password: process.env.DB_PASSWORD,// Senha do banco
-    port: process.env.DB_PORT,        // Porta padrão do PostgreSQL
+    connectionString: process.env.DATABASE_URL,
+    ssl: {
+        rejectUnauthorized: false,
+    },
 });
 
 // Middleware para acessar o pool nas rotas

@@ -100,6 +100,8 @@ const postBoletim = async ( req, res ) =>{
     const { pool } = req;
     const { data_coleta, qualidade_agua, observacao, id_ponto_coleta, id_usuario, id_campanha } = req.body;
 
+    console.log(data_coleta)
+
     try {
         const result = await pool.query(
             'INSERT INTO boletins (data_coleta, qualidade_agua, observacao, id_ponto_coleta, id_usuario_criador, id_campanha) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
